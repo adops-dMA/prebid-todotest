@@ -34,7 +34,7 @@
     gamNetworkCode: '21665835665',
 
     // URL de VUESTRO build de Prebid (ver prebid/README.md). En cuanto lo subáis al repo:
-    prebidUrl: 'https://cdn.jsdelivr.net/gh/USUARIO/todotest-adtag@v1.0.0/prebid/prebid.js', // TODO
+    prebidUrl: 'https://cdn.jsdelivr.net/gh/adops-dMA/todotest-adtag@v1.0.0/prebid/prebid.js', // TODO
 
     prebidTimeout: 1500,     // ms que espera la subasta antes de pedir a GAM
     currency: 'EUR',

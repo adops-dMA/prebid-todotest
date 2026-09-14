@@ -33,8 +33,9 @@
     // Network code de vuestra cuenta de GAM
     gamNetworkCode: '21665835665',
 
-    // URL de VUESTRO build de Prebid (ver prebid/README.md). En cuanto lo subáis al repo:
-    prebidUrl: 'https://cdn.jsdelivr.net/gh/adops-dMA/todotest-adtag@v1.0.0/prebid/prebid.js', // TODO
+    // URL del build de Prebid. Se deduce SOLA del propio repo/tag desde el que se
+    // carga este adtag.js (ver resolvePrebidUrl). Esto de abajo es solo un fallback.
+    prebidUrl: 'https://cdn.jsdelivr.net/gh/adops-dMA/prebid-todotest@1.0.1/prebid/prebid.js',
 
     prebidTimeout: 1500,     // ms que espera la subasta antes de pedir a GAM
     currency: 'EUR',
@@ -61,6 +62,23 @@
   var googletag = window.googletag = window.googletag || { cmd: [] };
   var pbjs = window.pbjs = window.pbjs || { que: [] };
   var counter = 0, started = false, observer = null;
+
+  // Captura la URL de ESTE script al ejecutarse, para cargar el prebid.js del
+  // MISMO repo/tag automáticamente (así no hay que tocar versiones a mano).
+  var SELF_SRC = (document.currentScript && document.currentScript.src) || '';
+  function resolvePrebidUrl() {
+    var src = SELF_SRC;
+    if (!src) {
+      var m = [].slice.call(document.scripts).filter(function (s) {
+        return /\/src\/adtag(\.min)?\.js/.test(s.src);
+      }).pop();
+      src = m ? m.src : '';
+    }
+    if (src && src.indexOf('/src/adtag') !== -1) {
+      return src.replace(/\/src\/adtag(\.min)?\.js.*$/, '/prebid/prebid.js');
+    }
+    return CONFIG.prebidUrl; // fallback
+  }
 
   function log() { if (CONFIG.debug) console.log.apply(console, ['[TTAds]'].concat([].slice.call(arguments))); }
 
@@ -161,7 +179,7 @@
     if (started) { scan(); return; }
     started = true;
     loadScript('https://securepubads.g.doubleclick.net/tag/js/gpt.js');
-    loadScript(CONFIG.prebidUrl, function () {
+    loadScript(resolvePrebidUrl(), function () {
       setupServices();
       scan();
       watchDynamic();

@@ -52,6 +52,13 @@
     lazyRootMargin: '300px',
     debug: false,
 
+    // Si true, el tag SOLO se ejecuta dentro de la app Cordova.
+    // Necesario si GTM-MRHFH939 es el mismo contenedor que usa la web:
+    // la WebView sirve desde https://todotest.com, o sea el MISMO origen
+    // que el sitio real, así que filtrar por hostname no vale para nada.
+    // Ponlo a false el día que quieras usar este mismo adtag en web.
+    onlyInApp: true,
+
     placements: {
       roba1:  { adUnitPath: '/21665835665/TT-Roba1', sizes: [[250,250],[300,250],[300,300],[300,600],[320,480]], bids: commonBids() },
       roba2:  { adUnitPath: '/21665835665/TT-Roba2', sizes: [[120,600],[160,300],[160,600],[300,100],[300,250],[300,300],[300,533],[300,600],[400,300]], bids: commonBids() },
@@ -116,6 +123,20 @@
    * en localStorage). Didomi nativo puede tardar, así que esperamos en vez
    * de abortar.
    * ================================================= */
+
+  // ¿Estamos dentro de la app Cordova?
+  // window.cordova lo define cordova.js, que cargan TODAS las pantallas del
+  // bundle, y en la web no existe jamás.
+  //
+  // NO se usa el meta ad:Technology como aval: GTM-MRHFH939 es un contenedor
+  // COMPARTIDO con la web, y si alguna plantilla web arrastrase ese meta con
+  // valor 'app' tendríamos publicidad de app sirviéndose en el sitio. Solo
+  // señales que no pueden existir fuera del contenedor Cordova.
+  function isCordovaApp() {
+    if (typeof window.cordova !== 'undefined') return true;
+    if (typeof window._cordovaNative !== 'undefined') return true;   // bridge Android
+    return false;
+  }
 
   function noPubli() {
     try { return window.localStorage.getItem('publi') === 'true'; } catch (e) { return false; }
@@ -386,6 +407,7 @@
   }
 
   function init() {
+    if (CONFIG.onlyInApp && !isCordovaApp()) { log('no es la app Cordova, no se ejecuta'); return; }
     if (noPubli()) { log('usuario sin publicidad'); return; }
     whenConsent(boot);
   }
